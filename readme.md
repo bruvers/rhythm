@@ -1,6 +1,6 @@
-# rhythm
+# Rhythm
 
-Rhythm is a a simplified version of the Compass Vertical Rhythm SASS mixin. Some functions have been removed, some have been renamed but most importantly all dependencies have been removed.
+Rhythm is a a simplified version of the [Compass Vertical Rhythm](http://compass-style.org/reference/compass/typography/vertical_rhythm/) SASS mixin. Some functions have been removed, some have been renamed but, most importantly, all dependencies have been removed.
 
 ## License
 Copyright (c) 2008-2009 Christopher M. Eppstein<br>
