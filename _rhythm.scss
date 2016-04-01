@@ -7,6 +7,12 @@ $base-line-height: 24px !default;
 // The default font size in all browsers.
 $browser-default-font-size: 16px;
 
+// The length unit in which to output rhythm values.
+// Supported values: px, em, rem. Percent units can't be used since they
+// make calculating padding and margins impractical, and percentage borders are
+// not valid or supported in css.
+$rhythm-unit: 'em' !default;
+
 // Allows the `adjust-font-size-to` mixin and the `lines-for-font-size` function
 // to round the line height to the nearest half line height instead of the
 // nearest integral line height to avoid large spacing between lines.
@@ -80,6 +86,47 @@ $base-rhythm-unit: $base-line-height / $base-font-size * 1em;
   @return $rhythm;
 }
 
+// Shorthand mixin to apply whitespace for top and bottom margins.
+@mixin rhythm-margins(
+  $leader: 1,
+  $trailer: $leader,
+  $font-size: $base-font-size
+) {
+  @include output-rhythm(margin-top, rhythm($leader, $font-size));
+  @include output-rhythm(margin-bottom, rhythm($trailer, $font-size));
+}
+
+// Shorthand mixin to apply whitespace for top and bottom padding.
+@mixin rhythm-padding(
+  $padding-leader: 1,
+  $padding-trailer: $padding-leader,
+  $font-size: $base-font-size
+) {
+  @include output-rhythm(padding-top, rhythm($padding-trailer, $font-size));
+  @include output-rhythm(padding-bottom, rhythm($padding-trailer, $font-size));
+}
+
+// @private Outputs rhythm values. For rem units, outputs pixel fallbacks
+// by default.
+@mixin output-rhythm($property, $values) {
+  @if $rhythm-unit == rem {
+    @include rem($property, $values);
+  }
+  @else {
+    $output: ();
+    @each $value in $values {
+      @if unit($value) == px {
+        // Ensure all pixel values are rounded to the nearest pixel.
+        $output: join($output, round($value));
+      }
+      @else {
+        $output: join($output, $value);
+      }
+    }
+    #{$property}: $output;
+  }
+}
+
 // Calculate the minimum multiple of rhythm units needed to contain the font-size.
 @function lines-for-font-size($font-size) {
   $lines: if($round-to-nearest-half-line,
@@ -122,6 +169,83 @@ $base-rhythm-unit: $base-line-height / $base-font-size * 1em;
 @mixin horizontal-borders($width: 1px, $lines: 1, $font-size: $base-font-size, $border-style: solid) {
   @include leading-border($width, $lines, $font-size, $border-style);
   @include trailing-border($width, $lines, $font-size, $border-style);
+}
+
+// Output a given style rule containing rem values along with an (optional)
+// fallback rule for older browsers (with rem values converted to px).
+//
+// @param $property
+//   The css property name.
+//
+// @param $values
+//   The value or list of values for the property.
+//
+// @param $use-px-fallback
+//   [ true | false ]
+//
+@mixin rem($property, $values) {
+
+  // get converted values.
+  $values: list-convert-rems($values);
+  $px-values: map-get($values, px);
+  $values: map-get($values, rem);
+
+  // Use pixel fallback for browsers that don't understand rem units.
+  @if $px-values != $values {
+    #{$property}: $px-values;
+  }
+
+  // Use rem values for everyone else (overrides pixel values).
+  #{$property}: $values;
+}
+
+// @private Get the px/rem versions of a value.
+@function rem-fallback-values($value) {
+  $_return: (
+          px: $value,
+          rem: $value,
+  );
+
+  @if type-of($value) == number and not unitless($value) {
+    @if unit($value) == rem {
+      $_return: map-merge($_return, (
+              px: round(convert-length($value, px)),
+      ));
+    } @else if unit($value) == px {
+      $_return: map-merge($_return, (
+              px: round($value),
+              rem: convert-length($value, rem),
+      ));
+    }
+  }
+
+  @return $_return;
+}
+
+// @private Get the px/rem versions of a list (or nested lists).
+@function list-convert-rems($value) {
+  $_empty: (
+          px: (),
+          rem: (),
+  );
+  $_return: $_empty;
+  $_sep: null;
+
+  @if type-of($value) == list {
+    $_sep: list-separator($value);
+    @each $sub in $value {
+      $_this: list-convert-rems($sub);
+      $_return: (
+              px: append(map-get($_return, px), map-get($_this, px), $_sep),
+              rem: append(map-get($_return, rem), map-get($_this, rem), $_sep),
+      );
+    }
+  } @else {
+    $_this: rem-fallback-values($value);
+    $_return: map-merge($_return, $_this);
+  }
+
+  @return $_return;
 }
 
 // Copyright (c) 2009-2014 Christopher M. Eppstein
