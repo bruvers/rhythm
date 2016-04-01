@@ -1,8 +1,8 @@
 {
     "name": "simplified-rhythm",
-    "description" : "A simplified version of Compass Vertical Rhythm without dependecies."
-    "main": "rhythm.scss",
-    "authors": [
+    "description" : "A simplified version of Compass Vertical Rhythm without dependecies.",
+    "main" : "rhythm.scss",
+    "authors" : [
       "Christopher M. Eppstein"
     ],
     "license": "MIT"
