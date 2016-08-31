@@ -102,7 +102,7 @@ $base-rhythm-unit: $base-line-height / $base-font-size * 1em;
   $padding-trailer: $padding-leader,
   $font-size: $base-font-size
 ) {
-  @include output-rhythm(padding-top, rhythm($padding-trailer, $font-size));
+  @include output-rhythm(padding-top, rhythm($padding-leader, $font-size));
   @include output-rhythm(padding-bottom, rhythm($padding-trailer, $font-size));
 }
 
